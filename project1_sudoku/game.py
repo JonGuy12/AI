@@ -71,26 +71,21 @@ def dfs(puzzle, node):
     #Write Code here
     frontier = queue.LifoQueue()
     frontier.put(node)
-    visited = []
     
     while not frontier.empty():
         curr_board = frontier.get()
-        if curr_board not in visited:
-            visited.append(curr_board)
-            if(test_goal(curr_board, puzzle)):
-                return curr_board
+        if(test_goal(curr_board, puzzle)):
+            return curr_board
         
-            empty_cell_list = empty_cells(curr_board)
-            
-            for empty in empty_cell_list:
-                for i in range(1,5):
-                    child = Sudoku._copy_board(curr_board)
-                    child[empty[0]][empty[1]] = i
-                    if child not in visited:
-                        #Sudoku(2, 2, child).show()
-                        print(child)
-                        frontier.put(child)
-                        dfs(puzzle, child)
+        empty_cell_list = empty_cells(curr_board)
+        
+        for empty in empty_cell_list:
+            for i in range(1,5):
+                child = Sudoku._copy_board(curr_board)
+                child[empty[0]][empty[1]] = i
+                #Sudoku(2, 2, child).show()
+                frontier.put(child)
+                dfs(puzzle, child)
 
 '''
 params: Takes the current puzzle as input
