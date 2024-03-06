@@ -144,23 +144,23 @@ def dfs_with_prunning(puzzle):
 if __name__ == "__main__":
 
     
-    puzzle=Sudoku(2,2).difficulty(0.2) # Constructs a 2 x 2 puzzle
+    puzzle=Sudoku(2,2).difficulty(0.5) # Constructs a 2 x 2 puzzle
     puzzle.show_full() # Pretty prints the puzzle
     print(valid_puzzle(2,puzzle.board)) # Checks if the puzzle is valid
     print(test_goal(puzzle.board,puzzle)) # Checks if the given puzzle board is the goal for the puzzle
     print(empty_cells(puzzle.board)) # Prints the empty cells as row and column values in a list for the current puzzle board
     
     # Running each searche and printing the solution along with the runtime (which is an average of 10 runs)
-    print("____________________________________________________________________________________")
-    print("BFS solution: ", bfs(puzzle, puzzle.board))
-    print("Time for BFS: ", timeit.timeit('bfs(puzzle, puzzle.board)', number=10, globals=globals()))
-    print("____________________________________________________________________________________")
-    print("DFS solution: ", dfs(puzzle))
-    print("Time for DFS: ", timeit.timeit('dfs(puzzle)', number=10, globals=globals()))
-    print("____________________________________________________________________________________")
-    print("BFS with pruning solution: ", bfs_with_prunning(puzzle, puzzle.board))
-    print("Time for BFS with pruning: ", timeit.timeit('bfs_with_prunning(puzzle, puzzle.board)', number=10, globals=globals()))
-    print("____________________________________________________________________________________")
-    print("DFS with pruning solution: ", dfs_with_prunning(puzzle))
-    print("Time for DFS with pruning: ", timeit.timeit('dfs_with_prunning(puzzle)', number=10, globals=globals()))
-    print("____________________________________________________________________________________")
+    # print("____________________________________________________________________________________")
+    # print("BFS solution: ", bfs(puzzle, puzzle.board))
+    # print("Time for BFS: ", timeit.timeit('bfs(puzzle, puzzle.board)', number=1, globals=globals()))
+    # print("____________________________________________________________________________________")
+    # print("DFS solution: ", dfs(puzzle))
+    # print("Time for DFS: ", timeit.timeit('dfs(puzzle)', number=1, globals=globals()))
+    # print("____________________________________________________________________________________")
+    # print("BFS with pruning solution: ", bfs_with_prunning(puzzle, puzzle.board))
+    # print("Time for BFS with pruning: ", timeit.timeit('bfs_with_prunning(puzzle, puzzle.board)', number=1, globals=globals()))
+    # print("____________________________________________________________________________________")
+    # print("DFS with pruning solution: ", dfs_with_prunning(puzzle))
+    # print("Time for DFS with pruning: ", timeit.timeit('dfs_with_prunning(puzzle)', number=1, globals=globals()))
+    # print("____________________________________________________________________________________")
