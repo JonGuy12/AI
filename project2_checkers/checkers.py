@@ -101,7 +101,7 @@ class Game:
 				copy_board.move_piece(location,valid_move)
 				if valid_move not in copy_board.adjacent(location):
 					copy_board.remove_piece(((location[0] + valid_move[0]) >> 1, (location[1] + valid_move[1]) >> 1))
-				utility=self.min_value(copy_board.board_piece_string(copy_board.matrix),valid_moves,alpha,beta,cutoff=5)
+				utility=self.min_value(copy_board.board_piece_string(copy_board.matrix),alpha,beta,cutoff=3)
 				'''
 				The below two lines are for this code to work without breaking
 				You just return the first location and the first valid move
@@ -131,9 +131,32 @@ class Game:
 		You will have to return the best possible utility for MIN 
 		given the current conditions
 		'''
-		# Write your code here (RED)
-		score = len(self.get_my_pieces(board_string)) - len(self.get_my_pieces(board_string,'B'))
-		return None
+		# Write your code here
+		if cutoff <= 0:
+			return self.evaluation_function(board_string)
+		min = float("inf")
+		
+		# For every valid move blue has, simulate it and call max
+		curr_board = Board(board_string)
+		locations = self.get_my_pieces(board_string,'B')
+		for location in locations:
+			valid_moves = curr_board.legal_moves(location)
+			for valid_move in valid_moves:
+				curr_board.move_piece(location,valid_move)
+				if valid_move not in curr_board.adjacent(location):
+					curr_board.remove_piece(((location[0] + valid_move[0]) >> 1, (location[1] + valid_move[1]) >> 1))
+				max_score = self.max_value(curr_board.board_piece_string(curr_board.matrix), alpha, beta, cutoff-1)
+
+				if max_score < min:
+					min = max_score
+
+				if min <= alpha:
+					break
+
+				if min < beta:
+					beta = min
+
+		return min
 
 	def max_value(self,board_string,alpha,beta,cutoff):
 		'''
@@ -141,8 +164,30 @@ class Game:
 		You will have to return the best possible utility for MAX 
 		given the current conditions
 		'''
-		# Write your code here (BLUE)
-		return None
+		# Write your code here
+		if cutoff <= 0:
+			return self.evaluation_function(board_string)
+		max = -float("inf")
+		
+		# For every valid move blue has, simulate it and call max
+		curr_board = Board(board_string)
+		locations = self.get_my_pieces(board_string,'R')
+		for location in locations:
+			valid_moves = curr_board.legal_moves(location)
+			for valid_move in valid_moves:
+				curr_board.move_piece(location,valid_move)
+				min_score = self.min_value(curr_board.board_piece_string(curr_board.matrix), alpha, beta, cutoff-1)
+
+				if min_score > max:
+					max = min_score
+
+				if max >= beta:
+					break
+
+				if max > alpha:
+					alpha = max
+
+		return max
 	
 	def evaluation_function(self,board_string):
 		'''
@@ -151,11 +196,53 @@ class Game:
 		The evaluation function returns the appropriate value for MIN and MAX for them to optimize
 		You have to modify the evaluation function as you find appropriate
 		'''
-		return (len(np.argwhere(board_string=='R').tolist()) + len(np.argwhere(board_string=='RK').tolist())*2 ) -\
-			  (len(np.argwhere(board_string=='B').tolist()) + len(np.argwhere(board_string=='BK').tolist())*2 )
-		return None
+		red_pieces = len(np.argwhere(board_string == 'R').tolist())
+		red_kings = len(np.argwhere(board_string == 'RK').tolist())
+		total_red = red_pieces + red_kings
+		blue_pieces = len(np.argwhere(board_string == 'B').tolist())
+		blue_kings = len(np.argwhere(board_string == 'BK').tolist())
+		total_blue = blue_pieces + blue_kings
+		piece_dif = total_red - total_blue
+		king_dif = red_kings - blue_kings
+		red_pos_sum = 0
+		blue_pos_sum = 0
 
-	
+		# Evaluate each piece's position
+		red_pieces = self.get_my_pieces(board_string, 'R')
+		for red_piece in red_pieces:
+			red_pos_sum += self.evaluate_position(red_piece, 'R')
+			
+		blue_pieces = self.get_my_pieces(board_string, 'B')
+		for blue_piece in blue_pieces:
+			blue_pos_sum += self.evaluate_position(blue_piece, 'B')		
+		
+		# If no more pieces are on the board
+		if total_red == 0:
+			total_red = 0.00001
+
+		if total_blue == 0:
+			total_blue = 0.00001
+
+		avg_red_pos = red_pos_sum / total_red
+		avg_blue_pos = blue_pos_sum / total_blue
+		pos_dif = avg_red_pos - avg_blue_pos
+		return (piece_dif * 100) + (king_dif * 10) + (pos_dif * 2)
+
+	# Values edge positions more than other positions
+	def evaluate_position(self, piece, color):
+		x, y = piece
+		kinging = False
+		for location in self.board.adjacent(piece):
+			if self.board.on_board(location) and self.board.location(location).occupant != None:
+				if (color == 'B' and location[1] == 0) or (color == 'R' and location[1] == 7):
+					kinging = True
+		if kinging:
+			return 10
+		elif x == 0 or x == 7 or y == 0 or y == 7:
+			return 5
+		else:
+			return 3
+
 	def event_loop(self):
 		"""
 		The event loop. This is where events are triggered 
@@ -680,7 +767,6 @@ class Square:
 
 def main():
 	game = Game()
-	print(game.min_value(game.board_string, -float("inf"), float("inf"), 5))
 	game.main()
 
 if __name__ == "__main__":
