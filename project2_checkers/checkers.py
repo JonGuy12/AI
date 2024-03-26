@@ -210,35 +210,27 @@ class Game:
 		# Evaluate each piece's position
 		red_pieces = self.get_my_pieces(board_string, 'R')
 		for red_piece in red_pieces:
-			red_pos_sum += self.evaluate_position(red_piece, 'R')
+			red_pos_sum += self.evaluate_position(red_piece, board_string)
 			
 		blue_pieces = self.get_my_pieces(board_string, 'B')
 		for blue_piece in blue_pieces:
-			blue_pos_sum += self.evaluate_position(blue_piece, 'B')		
-		
-		# If no more pieces are on the board
-		if total_red == 0:
-			total_red = 0.00001
+			blue_pos_sum += self.evaluate_position(blue_piece, board_string)		
 
-		if total_blue == 0:
-			total_blue = 0.00001
-
-		avg_red_pos = red_pos_sum / total_red
-		avg_blue_pos = blue_pos_sum / total_blue
-		pos_dif = avg_red_pos - avg_blue_pos
+		pos_dif = red_pos_sum - blue_pos_sum
 		return (piece_dif * 100) + (king_dif * 10) + (pos_dif * 2)
 
 	# Values edge positions more than other positions
-	def evaluate_position(self, piece, color):
+	def evaluate_position(self, piece, board_piece_string):
 		x, y = piece
+		temp_board = Board(board_piece_string)
 		kinging = False
+		is_king = temp_board.location(piece).occupant.king
+		color = temp_board.location(piece).occupant.color
 		for location in self.board.adjacent(piece):
 			if self.board.on_board(location) and self.board.location(location).occupant != None:
-				if (color == 'B' and location[1] == 0) or (color == 'R' and location[1] == 7):
-					kinging = True
-		if kinging:
-			return 10
-		elif x == 0 or x == 7 or y == 0 or y == 7:
+				if (not is_king) and ((color == BLUE and location[1] == 0) or (color == RED and location[1] == 7)):
+					return 10
+		if x == 0 or x == 7 or y == 0 or y == 7:
 			return 5
 		else:
 			return 3
