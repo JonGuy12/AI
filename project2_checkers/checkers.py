@@ -101,7 +101,7 @@ class Game:
 				copy_board.move_piece(location,valid_move)
 				if valid_move not in copy_board.adjacent(location):
 					copy_board.remove_piece(((location[0] + valid_move[0]) >> 1, (location[1] + valid_move[1]) >> 1))
-				utility=self.min_value(copy_board.board_piece_string(copy_board.matrix),alpha,beta,cutoff=3)
+				utility=self.min_value(copy_board.board_piece_string(copy_board.matrix),alpha,beta,cutoff=2)
 				'''
 				The below two lines are for this code to work without breaking
 				You just return the first location and the first valid move
@@ -223,15 +223,23 @@ class Game:
 	def evaluate_position(self, piece, board_piece_string):
 		x, y = piece
 		temp_board = Board(board_piece_string)
-		kinging = False
 		is_king = temp_board.location(piece).occupant.king
 		color = temp_board.location(piece).occupant.color
+		legal_moves = temp_board.blind_legal_moves(piece)
+		# If able to capture
+		for move in legal_moves:
+			if temp_board.on_board(move) and temp_board.location(move).occupant != None:
+				if temp_board.location(move).occupant.color != temp_board.location((x,y)).occupant.color and temp_board.on_board((move[0] + (move[0] - x), move[1] + (move[1] - y))) and temp_board.location((move[0] + (move[0] - x), move[1] + (move[1] - y))).occupant == None:
+					return 15
+		# If able to king
 		for location in self.board.adjacent(piece):
 			if self.board.on_board(location) and self.board.location(location).occupant != None:
 				if (not is_king) and ((color == BLUE and location[1] == 0) or (color == RED and location[1] == 7)):
 					return 10
+		# On edges?
 		if x == 0 or x == 7 or y == 0 or y == 7:
 			return 5
+		# Otherwise
 		else:
 			return 3
 
