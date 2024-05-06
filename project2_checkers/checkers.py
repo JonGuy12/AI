@@ -101,7 +101,7 @@ class Game:
 				copy_board.move_piece(location,valid_move)
 				if valid_move not in copy_board.adjacent(location):
 					copy_board.remove_piece(((location[0] + valid_move[0]) >> 1, (location[1] + valid_move[1]) >> 1))
-				utility=self.min_value(copy_board.board_piece_string(copy_board.matrix),alpha,beta,cutoff=3)
+				utility=self.min_value(copy_board.board_piece_string(copy_board.matrix),alpha,beta,cutoff=2)
 				'''
 				The below two lines are for this code to work without breaking
 				You just return the first location and the first valid move
@@ -194,7 +194,10 @@ class Game:
 		This is the evaluation function
 		This is a naive implementation it returns the weighted number of pieces between RED (MAX) and BLUE (MIN)
 		The evaluation function returns the appropriate value for MIN and MAX for them to optimize
-		You have to modify the evaluation function as you find appropriate
+		Returns the evaluation that is the sum of values with the significance heirarchy being:
+		1) Difference in amount of pieces (most significant)
+		2) Difference in amount of kings
+		3) Difference in overall piece position
 		'''
 		red_pieces = len(np.argwhere(board_string == 'R').tolist())
 		red_kings = len(np.argwhere(board_string == 'RK').tolist())
@@ -207,7 +210,7 @@ class Game:
 		red_pos_sum = 0
 		blue_pos_sum = 0
 
-		# Evaluate each piece's position
+		# Evaluate each piece's position using a positional evaluation function (evaluate_position) 
 		red_pieces = self.get_my_pieces(board_string, 'R')
 		for red_piece in red_pieces:
 			red_pos_sum += self.evaluate_position(red_piece, board_string)
@@ -217,21 +220,32 @@ class Game:
 			blue_pos_sum += self.evaluate_position(blue_piece, board_string)		
 
 		pos_dif = red_pos_sum - blue_pos_sum
-		return (piece_dif * 100) + (king_dif * 10) + (pos_dif * 2)
+		return (piece_dif * 100) + (king_dif * 10) + (pos_dif)
 
-	# Values edge positions more than other positions
+	# Evaluates the given piece's position given the board
 	def evaluate_position(self, piece, board_piece_string):
 		x, y = piece
 		temp_board = Board(board_piece_string)
-		kinging = False
 		is_king = temp_board.location(piece).occupant.king
 		color = temp_board.location(piece).occupant.color
+		legal_moves = temp_board.blind_legal_moves(piece)
+		# Checks if there is the option to capture a piece
+		for move in legal_moves:
+			if temp_board.on_board(move) and temp_board.location(move).occupant != None:
+				if temp_board.location(move).occupant.color != temp_board.location((x,y)).occupant.color and temp_board.on_board((move[0] + (move[0] - x), move[1] + (move[1] - y))) and temp_board.location((move[0] + (move[0] - x), move[1] + (move[1] - y))).occupant == None:
+					return 15
+				
+		# Checks if the piece is able to king
 		for location in self.board.adjacent(piece):
 			if self.board.on_board(location) and self.board.location(location).occupant != None:
 				if (not is_king) and ((color == BLUE and location[1] == 0) or (color == RED and location[1] == 7)):
 					return 10
+				
+		# Values edge positions more than other positions
+		# 	Checks if the piece is on an edge of the board
 		if x == 0 or x == 7 or y == 0 or y == 7:
 			return 5
+		# 	Otherwise 
 		else:
 			return 3
 
